@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tekton-jenkins-controller
+  namespace: tekton-jenkins
+  labels:
+    app.kubernetes.io/component: tekton-jenkins-controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-experimental
+subjects:
+  - kind: ServiceAccount
+    name: tekton-jenkins-controller
+    namespace: tekton-jenkins
+roleRef:
+  kind: Role
+  name: tekton-jenkins-controller
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-jenkins-controller
+  namespace: tekton-jenkins
+  labels:
+    app.kubernetes.io/name: tekton-jenkins-controller
+    app.kubernetes.io/component: tekton-jenkins-controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: tekton-experimental
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tekton-jenkins-controller
+      app.kubernetes.io/component: tekton-jenkins-controller
+      app.kubernetes.io/instance: default
+      app.kubernetes.io/part-of: tekton-experimental
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+      labels:
+        app.kubernetes.io/name: tekton-jenkins-controller
+        app.kubernetes.io/component: tekton-jenkins-controller
+        app.kubernetes.io/instance: default
+        app.kubernetes.io/version: devel
+        app.kubernetes.io/part-of: tekton-experimental
+        app: tekton-jenkins-controller
+    spec:
+      serviceAccountName: tekton-jenkins-controller
+      containers:
+      - name: tekton-jenkins-controller
+        image: ko://github.com/tektoncd/experimental/jenkins/cmd/controller
+        volumeMounts:
+        - name: config-logging
+          mountPath: /etc/config-logging
+        env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        # If you are changing these names, you will also need to update
+        # the controller's Role in 200-role.yaml to include the new
+        # values in the "configmaps" "get" rule.
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+      volumes:
+        - name: config-logging
+          configMap:
+            name: config-logging
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: tekton-jenkins-controller
+    app.kubernetes.io/component: tekton-jenkins-controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: tekton-experimental
+    # tekton.dev/release value replaced with inputs.params.versionTag in pipeline/tekton/publish.yaml
+    pipeline.tekton.dev/release: "devel"
+    # labels below are related to istio and should not be used for resource lookup
+    app: tekton-jenkins-controller
+    version: "devel"
+  name: tekton-jenkins-controller
+  namespace: tekton-jenkins
+spec:
+  ports:
+  - name: http-metrics
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app.kubernetes.io/name: tekton-jenkins-controller
+    app.kubernetes.io/component: tekton-jenkins-controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-experimental

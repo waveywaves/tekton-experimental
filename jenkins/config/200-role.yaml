@@ -1,0 +1,18 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-jenkins-controller
+  namespace: tekton-jenkins
+  labels:
+    app.kubernetes.io/component: tekton-jenkins-controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-experimental
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["list", "watch"]
+  # The controller needs access to these configmaps for logging information and runtime configuration.
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+    resourceNames: ["config-logging", "config-observability", "config-leader-election"]

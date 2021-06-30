@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tekton-jenkins-controller-cluster-access
+  labels:
+    app.kubernetes.io/component: tekton-jenkins-controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-experimental
+subjects:
+  - kind: ServiceAccount
+    name: tekton-jenkins-controller
+    namespace: tekton-jenkins
+roleRef:
+  kind: ClusterRole
+  name: tekton-jenkins-controller-cluster-access
+  apiGroup: rbac.authorization.k8s.io
